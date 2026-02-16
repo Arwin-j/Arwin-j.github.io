@@ -1,12 +1,36 @@
 const terminal = document.getElementById('terminal');
 const screen = document.querySelector('.screen');
 
+let percent = document.querySelector('.percent');
+let progress = document.querySelector('.progress');
+const progressbar = document.querySelector('.progress-bar');
+let count = 4;
+let per = 16;
+let loading = setInterval(animate, 50);
+
+
+function animate(){
+    if(count == 100 && per == 400){
+        clearInterval(loading);
+        percent.style.display = 'none';
+        progress.style.display = 'none';
+        progressbar.style.display = 'none';
+        setTimeout(bootTerminal, 500);
+
+    }
+    else{
+        per = per + 4;
+        count = count + 1;
+        progress.style.width = per + 'px';
+
+    }
+}
+
 // Terminal messages with delays
 const bootSequence = [
-    { text: 'Initializing terminal......', delay: 50 },
     { text: 'Initializing profile load......', delay: 50 },
     { text: 'Loaded successfully...', delay: 50 },
-    { text: 'Welcome guest User..... Hope you are doing well!', delay: 40 },
+    { text: 'Welcome esteemed guest User..... Hope you are doing well!', delay: 40 },
 ];
 
 let currentLine = 0;
@@ -42,15 +66,21 @@ function bootTerminal() {
 
         typeText(line, text, delay, () => {
             currentLine++;
-            setTimeout(bootTerminal, 300); // Pause between lines
+            setTimeout(bootTerminal, 200); // Pause between lines
         });
     } else {
         // Boot sequence complete
+        
         setTimeout(() => {
             screen.classList.remove('boot'); // Stop flicker
+            clearScreen();
             showPrompt();
         }, 500);
     }
+}
+
+function clearScreen(){
+    document.querySelector('line').innerHTML = "";
 }
 
 // Show the command prompt
@@ -66,39 +96,39 @@ function showPrompt() {
     setupInput(promptLine);
 }
 
-// Setup interactive input
-function setupInput(promptLine) {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'user-input';
+// // Setup interactive input
+// function setupInput(promptLine) {
+//     const input = document.createElement('input');
+//     input.type = 'text';
+//     input.className = 'user-input';
 
-    // Replace cursor with input field
-    const cursor = promptLine.querySelector('.cursor');
-    cursor.replaceWith(input);
+//     // Replace cursor with input field
+//     const cursor = promptLine.querySelector('.cursor');
+//     cursor.replaceWith(input);
 
-    input.focus();
+//     input.focus();
 
-    // Handle enter key
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const command = input.value.trim();
+//     // Handle enter key
+//     input.addEventListener('keypress', (e) => {
+//         if (e.key === 'Enter') {
+//             const command = input.value.trim();
 
-            if (command) {
-                // Display the command that was entered
-                promptLine.innerHTML = `profile@terminal: ~$ ${command}`;
+//             if (command) {
+//                 // Display the command that was entered
+//                 promptLine.innerHTML = `profile@terminal: ~$ ${command}`;
 
-                // Create response
-                const response = createLine();
-                response.textContent = `Command "${command}" executed. (Add your command logic here!)`;
+//                 // Create response
+//                 const response = createLine();
+//                 response.textContent = `Command "${command}" executed. (Add your command logic here!)`;
 
-                // Create new prompt
-                showPrompt();
-            }
-        }
-    });
-}
+//                 // Create new prompt
+//                 showPrompt();
+//             }
+//         }
+//     });
+// }
 
 // Start boot sequence on page load
 window.addEventListener('load', () => {
-    setTimeout(bootTerminal, 500);
+    setTimeout(animate, 500);
 });
