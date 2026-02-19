@@ -9,29 +9,29 @@ let per = 16;
 let loading = setInterval(animate, 50);
 
 
-function animate(){
-    if(count == 100 && per == 400){
-        clearInterval(loading);
-        percent.style.display = 'none';
-        progress.style.display = 'none';
-        progressbar.style.display = 'none';
-        setTimeout(bootTerminal, 500);
 
-    }
-    else{
-        per = per + 4;
-        count = count + 1;
-        progress.style.width = per + 'px';
-
-    }
-}
 
 // Terminal messages with delays
 const bootSequence = [
-    { text: 'Initializing profile load......', delay: 50 },
-    { text: 'Loaded successfully...', delay: 50 },
-    { text: 'Welcome esteemed guest User..... Hope you are doing well!', delay: 40 },
+    { text: 'Initializing profile load......', delay: 30 },
+    { text: 'Loaded successfully...', delay: 30 },
+    { text: 'Welcome esteemed guest User..... Hope you are doing well!', delay: 60 },
 ];
+
+const systemInfo = [
+    'Portfolio Access: Success',
+    'User: Guest',
+    'Welcome to P-Access Terminal',
+    'Enter system commands',
+    `Need help? Type 'help'`
+];
+
+const helpInfo = [
+    'help - displays all commands with instructions',
+    'profile - displays profile information',
+    'skills - displays skill information'
+];
+
 
 let currentLine = 0;
 let currentChar = 0;
@@ -42,6 +42,25 @@ function createLine() {
     line.className = 'line';
     terminal.appendChild(line);
     return line;
+}
+
+
+//Progress bar animation
+function animate() {
+    if (count == 100 && per == 400) {
+        clearInterval(loading);
+        percent.style.display = 'none';
+        progress.style.display = 'none';
+        progressbar.style.display = 'none';
+        setTimeout(bootTerminal, 500);
+
+    }
+    else {
+        per = per + 8;
+        count = count + 2;
+        progress.style.width = per + 'px';
+
+    }
 }
 
 // Type out text character by character
@@ -70,17 +89,30 @@ function bootTerminal() {
         });
     } else {
         // Boot sequence complete
-        
+
         setTimeout(() => {
-            screen.classList.remove('boot'); // Stop flicker
-            clearScreen();
+            // screen.classList.remove('boot');
+
+            clearTerminal();
+            printStatic(systemInfo);
+
+
+            const blank = createLine();
+            blank.innerHTML = '&nbsp'
             showPrompt();
         }, 500);
     }
 }
 
-function clearScreen(){
-    document.querySelector('line').innerHTML = "";
+function printStatic(lines) {
+    lines.forEach(text => {
+        const line = createLine();
+        line.textContent = text;
+    });
+}
+
+function clearTerminal() {
+    terminal.innerHTML = '';
 }
 
 // Show the command prompt
@@ -97,37 +129,59 @@ function showPrompt() {
 }
 
 // // Setup interactive input
-// function setupInput(promptLine) {
-//     const input = document.createElement('input');
-//     input.type = 'text';
-//     input.className = 'user-input';
+function setupInput(promptLine) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'user-input';
 
-//     // Replace cursor with input field
-//     const cursor = promptLine.querySelector('.cursor');
-//     cursor.replaceWith(input);
+    // Replace cursor with input field
+    const cursor = promptLine.querySelector('.cursor');
+    cursor.replaceWith(input);
 
-//     input.focus();
+    input.focus();
 
-//     // Handle enter key
-//     input.addEventListener('keypress', (e) => {
-//         if (e.key === 'Enter') {
-//             const command = input.value.trim();
+    // Handle enter key
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const command = input.value.trim();
 
-//             if (command) {
-//                 // Display the command that was entered
-//                 promptLine.innerHTML = `profile@terminal: ~$ ${command}`;
+            if (command) {
 
-//                 // Create response
-//                 const response = createLine();
-//                 response.textContent = `Command "${command}" executed. (Add your command logic here!)`;
+                switch (command) {
+                    case "help":
+                        displayHelp();
+                        break;
+                    case "clear":
 
-//                 // Create new prompt
-//                 showPrompt();
-//             }
-//         }
-//     });
-// }
+                        clearTerminal();
+                        break;
+                    default:
+                        alert("wrong command");
+                }
 
+                // Display the command that was entered
+                // promptLine.innerHTML = `profile@terminal: ~$ ${command}`;
+
+                // Create response
+                const response = createLine();
+                response.textContent = ``;
+
+
+
+                // Create new prompt
+                showPrompt();
+            }
+        }
+    });
+}
+
+
+//help 
+
+function displayHelp() {
+    printStatic(helpInfo);
+
+}
 // Start boot sequence on page load
 window.addEventListener('load', () => {
     setTimeout(animate, 500);
