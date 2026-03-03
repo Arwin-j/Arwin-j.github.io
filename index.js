@@ -8,9 +8,6 @@ let count = 4;
 let per = 16;
 let loading = setInterval(animate, 50);
 
-
-
-
 // Terminal messages with delays
 const bootSequence = [
     { text: 'Initializing profile load......', delay: 30 },
@@ -29,9 +26,9 @@ const systemInfo = [
 const helpInfo = [
     'help - displays all commands with instructions',
     'profile - displays profile information',
-    'skills - displays skill information'
+    'skills - opens a separate skills window',
+    'clear - clears terminal'
 ];
-
 
 let currentLine = 0;
 let currentChar = 0;
@@ -43,7 +40,6 @@ function createLine() {
     terminal.appendChild(line);
     return line;
 }
-
 
 //Progress bar animation
 function animate() {
@@ -98,7 +94,7 @@ function bootTerminal() {
 
 
             const blank = createLine();
-            blank.innerHTML = '&nbsp'
+            blank.innerHTML = '&nbsp';
             showPrompt();
         }, 500);
     }
@@ -128,7 +124,7 @@ function showPrompt() {
     setupInput(promptLine);
 }
 
-// // Setup interactive input
+// Setup interactive input
 function setupInput(promptLine) {
     const input = document.createElement('input');
     input.type = 'text';
@@ -146,42 +142,86 @@ function setupInput(promptLine) {
             const command = input.value.trim();
 
             if (command) {
+                const normalizedCommand = command.toLowerCase();
 
-                switch (command) {
-                    case "help":
+                switch (normalizedCommand) {
+                    case 'help':
                         displayHelp();
                         break;
-                    case "clear":
-
+                    case 'clear':
                         clearTerminal();
                         break;
+                    case 'skills':
+                        openSkillsWindow();
+                        break;
                     default:
-                        alert("wrong command");
+                        alert('wrong command');
                 }
 
-                // Display the command that was entered
-                // promptLine.innerHTML = `profile@terminal: ~$ ${command}`;
-
-                // Create response
-                const response = createLine();
-                response.textContent = ``;
-
-
-
-                // Create new prompt
                 showPrompt();
             }
         }
     });
 }
 
-
-//help 
-
 function displayHelp() {
     printStatic(helpInfo);
-
 }
+
+function openSkillsWindow() {
+    const skillsWindow = window.open('', '_blank', 'width=500,height=400');
+
+    if (!skillsWindow) {
+        alert('Popup blocked. Please allow popups and try again.');
+        return;
+    }
+
+    skillsWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Skills</title>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 24px;
+                    background: #000;
+                    color: #00ff00;
+                    font-family: 'Courier New', monospace;
+                }
+
+                h1 {
+                    margin-bottom: 16px;
+                    text-shadow: 0 0 8px #00ff00;
+                }
+
+                ul {
+                    margin: 0;
+                    padding-left: 22px;
+                }
+
+                li {
+                    margin-bottom: 8px;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>Skills</h1>
+            <ul>
+                <li>Java</li>
+                <li>C</li>
+                <li>HTML</li>
+                <li>CSS</li>
+                <li>JavaScript</li>
+            </ul>
+        </body>
+        </html>
+    `);
+    skillsWindow.document.close();
+}
+
 // Start boot sequence on page load
 window.addEventListener('load', () => {
     setTimeout(animate, 500);
