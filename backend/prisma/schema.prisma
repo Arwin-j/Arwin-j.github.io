@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  KEEP
+  CANCEL
+  UNUSED
+}
+
+enum InsightType {
+  SAVINGS
+  ALERT
+  ACTION
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  passwordHash   String
+  name           String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  transactions   Transaction[]
+  subscriptions  Subscription[]
+  insights       Insight[]
+
+  @@index([email])
+}
+
+model Transaction {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime
+  merchant      String
+  amount        Decimal   @db.Decimal(10, 2)
+  category      String
+  source        String    @default("manual")
+  recurringHint Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, date])
+  @@index([userId, merchant])
+}
+
+model Subscription {
+  id                 String             @id @default(uuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant           String
+  averageAmount      Decimal            @db.Decimal(10, 2)
+  billingCycleDays   Int
+  lastChargedAt      DateTime
+  status             SubscriptionStatus @default(ACTIVE)
+  potentialMonthly   Decimal            @db.Decimal(10, 2)
+  priceIncreaseFlag  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@unique([userId, merchant])
+  @@index([userId, status])
+}
+
+model Insight {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type       InsightType
+  title      String
+  detail     String
+  impact     Decimal     @db.Decimal(10, 2)
+  weekOf     DateTime
+  createdAt  DateTime    @default(now())
+
+  @@index([userId, weekOf])
+}
