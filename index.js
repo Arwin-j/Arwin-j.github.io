@@ -280,7 +280,7 @@ window.addEventListener('resize', () => {
 
 const ADMIN_USER = 'arwin';
 // Generate in the DevTools console:  sha256('yourNewPassword').then(console.log)
-const ADMIN_PASS_HASH = 'PASTE_NEW_HASH_HERE';
+const ADMIN_PASS_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8';
 const MAX_TRIES = 3;
 let triesLeft = MAX_TRIES;
 let lockTimer;
