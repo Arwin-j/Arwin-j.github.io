@@ -1,35 +1,61 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio - Arwin Johnson</title>
-    <link rel="icon" type="image/x-icon" href="images/file.png">
-    <link rel="stylesheet" href="index.css">
-    <script data-goatcounter="https://arwin-j.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P-Access Terminal</title>
+  <link rel="stylesheet" href="index.css">
 </head>
-
 <body>
-    <div class="crt-monitor">
 
-        <div class="screen boot">
-
-            <div class="loading">
-                
-                <div class="progress-bar">
-                    <div class="progress"></div>
-                </div>
-                <div class="percent">INITIALIZING</div>
-            </div>
-            <div class="terminal-content" id="terminal">
-                <!-- Terminal output will be added here -->
-            </div>
-        </div>
+  <!-- TITLE SCREEN -->
+  <section id="title-screen" class="view">
+    <h1 class="welcome">Welcome</h1>
+    <div class="btn-row">
+      <button id="guest-btn" class="menu-btn" type="button">Guest</button>
+      <button id="admin-btn" class="menu-btn" type="button">Admin</button>
     </div>
-    <script src="index.js"></script>
-    
-</body>
+  </section>
 
+  <!-- ADMIN LOGIN -->
+  <section id="login-screen" class="view hidden">
+    <form id="login-form" class="login-box" autocomplete="off">
+      <div class="field">
+        <label for="login-user">LOGIN:</label>
+        <input id="login-user" type="text" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="login-pass">PASSWORD:</label>
+        <input id="login-pass" type="password">
+      </div>
+      <p id="login-msg" aria-live="polite"></p>
+      <div class="btn-row">
+        <button type="submit" class="menu-btn small">Enter</button>
+        <button type="button" id="back-btn" class="menu-btn small">Back</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- TERMINAL -->
+  <div class="screen hidden">
+    <div class="loading">
+      <div class="progress-bar"><div class="progress"></div></div>
+      <div class="percent"></div>
+    </div>
+    <div id="terminal"></div>
+  </div>
+
+  <!-- POP-UP WINDOW (CRT style, modal + draggable) -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="crt-window" role="dialog" aria-modal="true" aria-labelledby="win-title">
+      <div class="win-bar" id="win-bar">
+        <span id="win-title">Window</span>
+        <button type="button" id="win-close" class="win-close" aria-label="Close window">&times;</button>
+      </div>
+      <div class="win-body" id="win-body"></div>
+    </div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
 </html>
