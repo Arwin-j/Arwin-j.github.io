@@ -10,11 +10,17 @@
 
   <!-- TITLE SCREEN -->
   <section id="title-screen" class="view">
+    <div class="mode-toggle" role="group" aria-label="Interface mode">
+      <button type="button" id="mode-simple" class="mode-opt">Simple</button>
+      <button type="button" id="mode-terminal" class="mode-opt">Terminal</button>
+    </div>
     <h1 class="welcome">Welcome</h1>
+   
     <div class="btn-row">
       <button id="guest-btn" class="menu-btn" type="button">Guest</button>
       <button id="admin-btn" class="menu-btn" type="button">Admin</button>
     </div>
+    <p id="mode-hint" class="mode-hint" aria-live="polite"></p>
   </section>
 
   <!-- ADMIN LOGIN -->
@@ -34,6 +40,13 @@
         <button type="button" id="back-btn" class="menu-btn small">Back</button>
       </div>
     </form>
+  </section>
+
+  <!-- SIMPLE MODE MENU (buttons instead of typing) -->
+  <section id="menu-screen" class="view hidden">
+    <h2 class="menu-title">Menu</h2>
+    <p id="menu-user" class="menu-user"></p>
+    <div id="menu-buttons" class="btn-row menu-buttons"></div>
   </section>
 
   <!-- TERMINAL -->

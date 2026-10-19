@@ -1,4 +1,5 @@
 :root {
+  --frame: 20px;
   --terminal-font: 'Courier New', Courier, monospace;
   --green: #39ff14;
   --green-dim: #00ff00;
@@ -13,7 +14,7 @@ body {
   width: 100%;
   height: 100%;
   background: #0a0a0a;
-  border: 20px solid #222;
+  border: var(--frame) solid #222;
   border-radius: 15px;
   overflow-y: auto;
   font-family: var(--terminal-font);
@@ -22,7 +23,7 @@ body {
 /* ---------- Shared full-screen views (title + login) ---------- */
 .view {
   position: fixed;
-  inset: 20px;                 /* keeps the gray frame visible */
+  inset: var(--frame);         /* keeps the gray frame visible */
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -37,7 +38,7 @@ body {
 
 .welcome {
   margin: 0 0 48px;
-  font-size: clamp(3rem, 12vw, 8rem);
+  font-size: clamp(1rem, 12vw, 8rem);
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -136,7 +137,7 @@ body {
 /* ---------- Terminal screen ---------- */
 .screen {
   position: relative;
-  min-height: calc(100vh - 40px);
+  min-height: calc(100vh - 2 * var(--frame));
   padding: 30px;
   overflow: hidden;
   background: #000;
@@ -306,4 +307,62 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .welcome, #title-screen .menu-btn, .cursor, .crt-window.pop { animation: none; }
+}
+
+/* ---------- Mode toggle (title screen) ---------- */
+.mode-toggle {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  border: 2px solid var(--green-dim);
+}
+.mode-opt {
+  padding: 8px 18px;
+  font: 700 0.95rem var(--terminal-font);
+  color: var(--green-dim);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.mode-opt[aria-pressed="true"] {
+  background: var(--green-dim);
+  color: #000;
+  text-shadow: none;
+}
+.mode-opt:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+.mode-hint {
+  max-width: 90vw;
+  margin-top: 28px;
+  text-align: center;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+/* ---------- Simple mode menu ---------- */
+#menu-screen { justify-content: center; }
+
+.menu-title {
+  font-size: clamp(2rem, 8vw, 4rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px var(--green-dim), 0 0 30px #00aa00;
+}
+.menu-user { margin: 8px 0 32px; opacity: 0.85; }
+
+.menu-buttons { flex-direction: column; align-items: center; gap: 16px; }
+.menu-buttons .menu-btn { width: min(280px, 80vw); min-height: 52px; }
+
+/* ---------- Phones ---------- */
+@media (max-width: 600px) {
+  :root { --frame: 8px; }
+  body { border-radius: 8px; }
+  .screen { padding: 16px; font-size: 16px; }
+  .user-input { font-size: 16px; }          /* 16px stops iOS zooming on focus */
+  .field { flex-direction: column; align-items: stretch; gap: 6px; }
+  .field label { width: auto; }
+  .login-box { padding: 20px; }
+  .win-body { padding: 16px; }
 }

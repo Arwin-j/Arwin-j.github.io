@@ -12,12 +12,19 @@ const loginForm   = document.getElementById('login-form');
 const userInput   = document.getElementById('login-user');
 const passInput   = document.getElementById('login-pass');
 const loginMsg    = document.getElementById('login-msg');
+const menuScreen  = document.getElementById('menu-screen');
+const menuUser    = document.getElementById('menu-user');
+const menuButtons = document.getElementById('menu-buttons');
+const modeSimpleBtn   = document.getElementById('mode-simple');
+const modeTerminalBtn = document.getElementById('mode-terminal');
+const modeHint        = document.getElementById('mode-hint');
 
 let count = 4;
 let per = 16;
 let loading;
 let currentUser = 'Guest';
 let booted = false;
+let mode = 'terminal';   // 'terminal' or 'simple'
 let currentLine = 0;
 
 /* ================= CONTENT (edit these) ================= */
@@ -36,7 +43,8 @@ const helpInfo = [
     'help - displays all commands with instructions',
     'profile - opens the profile window',
     'skills - opens the skills window',
-    'clear - clears terminal'
+    'clear - clears terminal',
+    'exit - returns to the title screen'
 ];
 
 function getBootSequence() {
@@ -128,11 +136,20 @@ function bootTerminal() {
 
 /* ================= COMMANDS ================= */
 
+// Each entry becomes a terminal command AND a button in Simple mode.
+// To add another pop-up page, add one line here.
+const infoWindows = {
+    profile: { title: 'Profile', items: profileInfo },
+    skills:  { title: 'Skills',  items: skills },
+};
+
 const commands = {
-    help:    () => printStatic(helpInfo),
-    clear:   clearTerminal,
-    profile: () => openWindow('Profile', profileInfo),
-    skills:  openSkillsWindow,
+    help:  () => printStatic(helpInfo),
+    clear: clearTerminal,
+    exit:  () => location.reload(),      // fresh start at the title screen
+    ...Object.fromEntries(
+        Object.entries(infoWindows).map(([name, w]) => [name, () => openWindow(w.title, w.items)])
+    ),
 };
 
 function runCommand(raw) {
@@ -194,7 +211,15 @@ function isWindowOpen() {
     return !modal.classList.contains('hidden');
 }
 
+let lastFocus = null;
+
+function setBackgroundInert(value) {
+    screen.inert = value;                      // nothing behind is clickable or focusable
+    menuScreen.inert = value;
+}
+
 function openWindow(title, items) {
+    lastFocus = document.activeElement;
     winTitle.textContent = title;
 
     const list = document.createElement('ul');
@@ -216,7 +241,7 @@ function openWindow(title, items) {
     winBody.replaceChildren(list);
 
     modal.classList.remove('hidden');
-    screen.inert = true;                       // nothing behind is clickable or focusable
+    setBackgroundInert(true);
 
     // center it, then play the CRT turn-on animation
     win.style.left = Math.max(0, (window.innerWidth  - win.offsetWidth)  / 2) + 'px';
@@ -231,12 +256,9 @@ function openWindow(title, items) {
 function closeWindow() {
     if (!isWindowOpen()) return;
     modal.classList.add('hidden');
-    screen.inert = false;
-    document.querySelector('.user-input:not(:disabled)')?.focus();
-}
-
-function openSkillsWindow() {
-    openWindow('Skills', skills);
+    setBackgroundInert(false);
+    if (mode === 'simple') lastFocus?.focus();
+    else document.querySelector('.user-input:not(:disabled)')?.focus();
 }
 
 winClose.addEventListener('click', closeWindow);
@@ -291,7 +313,7 @@ async function sha256(text) {
 }
 
 function showView(view) {
-    [titleScreen, loginScreen, screen].forEach(v => v.classList.add('hidden'));
+    [titleScreen, loginScreen, menuScreen, screen].forEach(v => v.classList.add('hidden'));
     view.classList.remove('hidden');
 }
 
@@ -308,9 +330,13 @@ function goToTitle() {
     showView(titleScreen);
 }
 
-function enterTerminal(role) {
+function enterSite(role) {
     resetLogin();                 // clears password from the form
     currentUser = role;
+    if (mode === 'simple') {
+        showMenu();
+        return;
+    }
     showView(screen);
     if (!booted) {
         booted = true;
@@ -318,7 +344,7 @@ function enterTerminal(role) {
     }
 }
 
-document.getElementById('guest-btn').addEventListener('click', () => enterTerminal('Guest'));
+document.getElementById('guest-btn').addEventListener('click', () => enterSite('Guest'));
 
 document.getElementById('admin-btn').addEventListener('click', () => {
     resetLogin();
@@ -336,7 +362,7 @@ loginForm.addEventListener('submit', async (e) => {
     if (loginScreen.classList.contains('hidden')) return;   // user left during the check
 
     if (userInput.value.trim() === ADMIN_USER && hash === ADMIN_PASS_HASH) {
-        enterTerminal('Admin');
+        enterSite('Admin');
         return;
     }
 
@@ -352,3 +378,67 @@ loginForm.addEventListener('submit', async (e) => {
         passInput.focus();
     }
 });
+
+/* ================= SIMPLE MODE MENU ================= */
+
+function makeMenuButton(label, onClick) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'menu-btn';
+    btn.textContent = label;
+    btn.addEventListener('click', onClick);
+    return btn;
+}
+
+function buildMenu() {
+    menuButtons.replaceChildren();
+    Object.values(infoWindows).forEach(w => {
+        menuButtons.appendChild(makeMenuButton(w.title, () => openWindow(w.title, w.items)));
+    });
+    menuButtons.appendChild(makeMenuButton('Log out', goToTitle));
+}
+
+function showMenu() {
+    menuUser.textContent = `User: ${currentUser}`;
+    showView(menuScreen);
+    menuButtons.querySelector('button')?.focus();
+}
+
+/* ================= MODE TOGGLE ================= */
+
+const MODE_KEY = 'portfolio-mode';
+const MODE_HINTS = {
+    simple:   'Tap buttons to explore. No typing needed.',
+    terminal: "Type commands like in a shell. Try 'help'."
+};
+
+function setMode(next, remember) {
+    mode = next;
+    modeSimpleBtn.setAttribute('aria-pressed', String(next === 'simple'));
+    modeTerminalBtn.setAttribute('aria-pressed', String(next === 'terminal'));
+    modeHint.textContent = MODE_HINTS[next];
+    if (remember) {
+        try { localStorage.setItem(MODE_KEY, next); } catch { /* storage blocked: fine */ }
+    }
+}
+
+function initialMode() {
+    try {
+        const saved = localStorage.getItem(MODE_KEY);
+        if (saved === 'simple' || saved === 'terminal') return saved;
+    } catch { /* ignore */ }
+    // First visit: phones and touch screens start in Simple mode
+    const small = window.matchMedia && window.matchMedia('(max-width: 700px), (pointer: coarse)').matches;
+    return small ? 'simple' : 'terminal';
+}
+
+modeSimpleBtn.addEventListener('click',   () => setMode('simple', true));
+modeTerminalBtn.addEventListener('click', () => setMode('terminal', true));
+
+buildMenu();
+setMode(initialMode(), false);
+
+/* ================= START ON TITLE ================= */
+// Don't rely on the HTML classes: always begin with only the title screen showing.
+showView(titleScreen);
+modal.classList.add('hidden');
