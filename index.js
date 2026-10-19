@@ -306,6 +306,9 @@ const ADMIN_PASS_HASH = '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef7
 const MAX_TRIES = 3;
 let triesLeft = MAX_TRIES;
 let lockTimer;
+let loginPending = false;
+let loginRequest = 0;
+const loginSubmit = loginForm.querySelector('button[type="submit"]');
 
 async function sha256(text) {
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -319,10 +322,13 @@ function showView(view) {
 
 function resetLogin() {
     clearTimeout(lockTimer);
+    loginRequest++;
+    loginPending = false;
     triesLeft = MAX_TRIES;
     loginForm.reset();
     loginMsg.textContent = '';
     userInput.disabled = passInput.disabled = false;
+    loginSubmit.disabled = false;
 }
 
 function goToTitle() {
@@ -344,9 +350,9 @@ function enterSite(role) {
     }
 }
 
-document.getElementById('guest-btn').addEventListener('click', () => enterSite('Guest'));
+document.getElementById('guest-btn')?.addEventListener('click', () => enterSite('Guest'));
 
-document.getElementById('admin-btn').addEventListener('click', () => {
+document.getElementById('admin-btn')?.addEventListener('click', () => {
     resetLogin();
     showView(loginScreen);
     userInput.focus();
@@ -356,26 +362,49 @@ document.getElementById('back-btn').addEventListener('click', goToTitle);
 
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (userInput.disabled) return;   // locked out, waiting to return
+    if (userInput.disabled || loginPending) return;
 
-    const hash = await sha256(passInput.value);
-    if (loginScreen.classList.contains('hidden')) return;   // user left during the check
+    loginPending = true;
+    const request = ++loginRequest;
+    const username = userInput.value.trim();
+    const password = passInput.value;
+    userInput.disabled = passInput.disabled = true;
+    loginSubmit.disabled = true;
 
-    if (userInput.value.trim() === ADMIN_USER && hash === ADMIN_PASS_HASH) {
-        enterSite('Admin');
-        return;
-    }
+    try {
+        let hash;
+        try {
+            hash = await sha256(password);
+        } catch (error) {
+            if (request !== loginRequest || loginScreen.classList.contains('hidden')) return;
+            console.error('Admin login verification failed:', error);
+            loginMsg.textContent = 'Secure login is unavailable. Please try again in a supported browser.';
+            return;
+        }
 
-    triesLeft--;
-    passInput.value = '';
+        if (request !== loginRequest || loginScreen.classList.contains('hidden')) return;
 
-    if (triesLeft <= 0) {
-        loginMsg.textContent = 'Access denied. Returning to title screen...';
-        userInput.disabled = passInput.disabled = true;
-        lockTimer = setTimeout(goToTitle, 1500);
-    } else {
-        loginMsg.textContent = `Invalid credentials. ${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left.`;
-        passInput.focus();
+        if (username === ADMIN_USER && hash === ADMIN_PASS_HASH) {
+            enterSite('Admin');
+            return;
+        }
+
+        triesLeft--;
+        passInput.value = '';
+
+        if (triesLeft <= 0) {
+            loginMsg.textContent = 'Access denied. Returning to title screen...';
+            lockTimer = setTimeout(goToTitle, 1500);
+        } else {
+            loginMsg.textContent = `Invalid credentials. ${triesLeft} ${triesLeft === 1 ? 'try' : 'tries'} left.`;
+        }
+    } finally {
+        if (request === loginRequest && !loginScreen.classList.contains('hidden') && triesLeft > 0) {
+            loginPending = false;
+            userInput.disabled = passInput.disabled = false;
+            loginSubmit.disabled = false;
+            passInput.focus();
+        }
     }
 });
 
