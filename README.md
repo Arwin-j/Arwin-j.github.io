@@ -22,7 +22,7 @@
 ![Dependencies](https://img.shields.io/badge/dependencies-none-000000?style=flat-square&labelColor=000000&color=39ff14)
 ![GitHub Pages](https://img.shields.io/badge/hosted_on-GitHub_Pages-000000?style=flat-square&logo=github&logoColor=39ff14)
 
-[**>> LAUNCH THE LIVE SITE <<**](https://arwin-j.github.io/YOUR-REPO/)
+[**>> LAUNCH THE LIVE SITE <<**](https://arwin-j.github.io/)
 
 </div>
 
@@ -50,12 +50,12 @@ Visitors choose how they want to explore:
 The toggle sits at the top of the welcome screen, and the choice is remembered
 on that device.
 
-<!--
+
 SCREENSHOTS: add one or two images to a /docs folder, then uncomment:
 
 ![Welcome screen](docs/welcome.png)
 ![Projects window](docs/projects.png)
--->
+
 
 ## [ 02 ] FEATURES
 
