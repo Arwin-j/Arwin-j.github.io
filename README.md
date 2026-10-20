@@ -51,10 +51,11 @@ The toggle sits at the top of the welcome screen, and the choice is remembered
 on that device.
 
 
-SCREENSHOTS: add one or two images to a /docs folder, then uncomment:
 
-![Welcome screen](docs/welcome.png)
-![Projects window](docs/projects.png)
+
+![Menu Screen](docs/Menu.jpeg)
+![Experience and Skills Window](docs/ExpskillsPic.jpeg)
+![Skills Window](docs/skills.jpeg)
 
 
 ## [ 02 ] FEATURES
