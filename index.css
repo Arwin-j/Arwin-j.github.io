@@ -350,7 +350,7 @@ body {
 }
 
 /* ---------- Simple mode menu ---------- */
-#menu-screen { justify-content: center; }
+#menu-screen { justify-content: center; padding-top: 7rem; }
 
 .menu-title {
   font-size: clamp(2rem, 8vw, 4rem);
@@ -374,3 +374,101 @@ body {
   .login-box { padding: 20px; }
   .win-body { padding: 16px; }
 }
+
+
+/* ---------- Big window (Introduction) ---------- */
+.crt-window.large {
+  width: min(92vw, max(50vw, 520px));
+  min-height: min(50vh, 85vh);
+}
+.crt-window.large .win-body { flex: 1; font-size: 1.1rem; line-height: 1.7; }
+.win-body p { margin-bottom: 14px; }
+
+/* ---------- Simple menu banner: intro ticker, then ambition ---------- */
+.menu-banner {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  min-height: 4.5rem;
+  padding: 0 16px;
+  overflow: hidden;
+  text-align: center;
+}
+.intro-track {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 6px var(--green-dim);
+  transform: translateX(100vw);              /* parked off-screen to the right */
+  will-change: transform;
+}
+.intro-track.run { animation: intro-slide linear forwards; }   /* duration set by index.js */
+@keyframes intro-slide {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+.intro-track.still { position: static; display: block; transform: none; white-space: normal; margin-bottom: 8px; }
+
+.ambition-line {
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  opacity: 0.9;
+  text-shadow: 0 0 6px var(--green-dim);
+}
+
+/* ---------- Education + Certifications windows ---------- */
+.crt-window.wide { width: min(92vw, 640px); }
+
+.win-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 2px solid var(--green-dim);
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.entry { margin-bottom: 24px; }
+.entry:last-child { margin-bottom: 0; }
+
+.entry-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.entry-title { font-size: 1.1rem; font-weight: 700; }
+.entry-date,
+.entry-status { margin-left: auto; white-space: nowrap; }
+.entry-line {                       /* the line between school name and dates */
+  flex: 1 1 24px;
+  min-width: 24px;
+  height: 1px;
+  align-self: center;
+  background: var(--green-dim);
+  opacity: 0.7;
+}
+.entry-sub,
+.entry-detail { margin-top: 4px; opacity: 0.9; }
+
+
+/* ---------- Custom mouse cursor ---------- */
+:root {
+  /* green arrow (hotspot = the tip, at 3,2) */
+  --cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M3 2l16 9-7 2-3 7z' fill='%2339ff14' stroke='%23000' stroke-width='1.5' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto;
+
+  /* terminal block cursor for anything clickable (hotspot = the middle) */
+  --cursor-click: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect x='6' y='2' width='12' height='20' fill='%2339ff14' fill-opacity='0.85' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") 12 12, pointer;
+}
+
+html { cursor: var(--cursor-default); }
+
+button,
+a,
+.menu-btn,
+.mode-opt,
+.win-close { cursor: var(--cursor-click); }

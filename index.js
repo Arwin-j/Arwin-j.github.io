@@ -18,6 +18,7 @@ const menuButtons = document.getElementById('menu-buttons');
 const modeSimpleBtn   = document.getElementById('mode-simple');
 const modeTerminalBtn = document.getElementById('mode-terminal');
 const modeHint        = document.getElementById('mode-hint');
+const winFooter = document.getElementById('win-footer');
 
 let count = 4;
 let per = 16;
@@ -39,10 +40,52 @@ const profileInfo = [
     // add more lines here
 ];
 
+
+// Education: one object per school
+const education = [
+    {
+        school:   'Temple University',
+        period:   'Aug 2022 - May 2026',
+        status:   'Graduated',            // or 'In progress'
+        location: 'Philadelphia, PA',
+        degree:   'Bachelor of Science in Computer Science'
+    },
+];
+
+// Certifications: one object per certificate (EDIT these placeholders)
+const certifications = [
+    {
+        name:     'Python Developer',
+        date:     '05 2026',
+        provider: 'freeCodeCamp',
+        url:      'https://www.freecodecamp.org/certification/arwinjasperjohnson/python-v9'
+    },
+    {
+        name:     'Certificate of completion: Claude 101',
+        date:     '06 2026',
+        provider: 'Anthropic',
+        url:      'https://verify.skilljar.com/c/e2b3grfim2h7'
+    }
+];
+
+// Scrolls across the top of the Simple-mode menu (one line)
+const introTicker = "Hello! I'm Arwin, a recent Computer Science graduate on a mission to master AI Engineering and Game Development. I love turning complex logic into interactive experiences. Explore my portfolio to see how I bridge the gap between intelligent data and gameplay!";
+
+// Types out slowly after the ticker has passed (EDIT this to your own words)
+const ambitionText = 'My ambition is to build and create meaningful software that simplifies lives and solves real-world problems.';
+
+// Shown in the big Introduction window (/intro in Terminal mode)
+const introParagraphs = [
+    "Hi, I'm Arwin.",
+    'I am a Computer Science graduate from Temple University.',
+    'This portfolio is built as a retro terminal. Type help to see what else you can open.',
+    // add more paragraphs here
+];
+
 const helpInfo = [
     'help - displays all commands with instructions',
-    'profile - opens the profile window',
-    'skills - opens the skills window',
+    'intro - opens the introduction window',
+    'education (or edu) - opens the education window',
     'clear - clears terminal',
     'exit - returns to the title screen'
 ];
@@ -95,6 +138,7 @@ function typeText(element, text, speed, callback) {
             if (callback) callback();
         }
     }, speed);
+    return typing;
 }
 
 /* ================= BOOT ================= */
@@ -139,21 +183,53 @@ function bootTerminal() {
 // Each entry becomes a terminal command AND a button in Simple mode.
 // To add another pop-up page, add one line here.
 const infoWindows = {
-    profile: { title: 'Profile', items: profileInfo },
-    skills:  { title: 'Skills',  items: skills },
+    profile: { title: 'Profile', items: profileInfo, inMenu: false},
+    skills:  { title: 'Skills',  items: skills, inMenu: false},
+    intro:   { title: 'Introduction', items: introParagraphs, inMenu: false, options: { large: true, paragraphs: true } },
+    education: {
+        title: 'Education',
+        aliases: ['edu'],
+        items: [],
+        options: {
+            wide: true,
+            render: renderEducation,
+            footer: [{ label: 'Certifications', onClick: () => openInfo('certifications') }]
+        }
+    },
+    certifications: {
+        title: 'Certifications',
+        aliases: ['certs'],
+        inMenu: false,                   // reached from the Education window instead
+        items: [],
+        options: {
+            wide: true,
+            render: renderCertifications,
+            footer: [{ label: 'Back to Education', onClick: () => openInfo('education') }]
+        }
+    },
 };
+
+function openInfo(key) {
+    const w = infoWindows[key];
+    openWindow(w.title, w.items, w.options);
+}
+
+// every entry (and its aliases) becomes a terminal command
+const windowCommands = {};
+Object.entries(infoWindows).forEach(([name, w]) => {
+    [name, ...(w.aliases || [])].forEach(cmd => { windowCommands[cmd] = () => openInfo(name); });
+});
 
 const commands = {
     help:  () => printStatic(helpInfo),
     clear: clearTerminal,
     exit:  () => location.reload(),      // fresh start at the title screen
-    ...Object.fromEntries(
-        Object.entries(infoWindows).map(([name, w]) => [name, () => openWindow(w.title, w.items)])
-    ),
+    ...windowCommands,
 };
 
+
 function runCommand(raw) {
-    const key = raw.toLowerCase();
+        const key = raw.toLowerCase().replace(/^\//, '');
     if (Object.hasOwn(commands, key)) commands[key]();
     else printStatic([`Command not found: ${raw}. Type 'help'.`]);
 }
@@ -218,27 +294,93 @@ function setBackgroundInert(value) {
     menuScreen.inert = value;
 }
 
-function openWindow(title, items) {
-    lastFocus = document.activeElement;
-    winTitle.textContent = title;
+function make(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+}
 
-    const list = document.createElement('ul');
-    items.forEach(item => {
-        const li = document.createElement('li');
-        if (typeof item === 'string') {
-            li.textContent = item;
-        } else {                                   // { label, url } becomes a link
-            li.append(`${item.label}: `);
-            const a = document.createElement('a');
-            a.textContent = item.url.replace(/^https?:\/\//, '');
-            a.href = item.url;
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            li.appendChild(a);
-        }
-        list.appendChild(li);
+function renderEducation() {
+    const wrap = make('div', 'entries');
+    education.forEach(e => {
+        const entry = make('div', 'entry');
+
+        const top = make('div', 'entry-row');
+        top.append(make('span', 'entry-title', e.school), make('span', 'entry-line'), make('span', 'entry-date', e.period));
+
+        const sub = make('div', 'entry-row entry-sub');
+        sub.append(make('span', '', e.location), make('span', 'entry-status', e.status));
+
+        entry.append(top, sub, make('div', 'entry-detail', e.degree));
+        wrap.appendChild(entry);
     });
-    winBody.replaceChildren(list);
+    return wrap;
+}
+
+function renderCertifications() {
+    const wrap = make('div', 'entries');
+    if (!certifications.length) {
+        wrap.appendChild(make('p', '', 'No certifications listed yet.'));
+        return wrap;
+    }
+    certifications.forEach(c => {
+        const entry = make('div', 'entry');
+
+        const top = make('div', 'entry-row');
+        top.append(make('span', 'entry-title', c.name), make('span', 'entry-date', c.date));
+        entry.append(top, make('div', 'entry-detail', c.provider));
+
+        if (c.url) {
+            const credential = make('div', 'entry-detail', 'Credential: ');
+            const link = make('a', '', 'View credential');
+            link.href = c.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            credential.appendChild(link);
+            entry.appendChild(credential);
+        }
+        wrap.appendChild(entry);
+    });
+    return wrap;
+}
+
+function openWindow(title, items, options = {}) {
+    if (!isWindowOpen()) lastFocus = document.activeElement;   // keep the original opener when switching windows
+    winTitle.textContent = title;
+    win.classList.toggle('large', Boolean(options.large));
+    win.classList.toggle('wide', Boolean(options.wide));
+
+    if (options.render) {
+        winBody.replaceChildren(options.render());
+    } else {
+        const list = document.createElement(options.paragraphs ? 'div' : 'ul');
+        items.forEach(item => {
+            const el = document.createElement(options.paragraphs ? 'p' : 'li');
+            if (typeof item === 'string') {
+                el.textContent = item;
+            } else {                                   // { label, url } becomes a link
+                el.append(`${item.label}: `);
+                const a = document.createElement('a');
+                a.textContent = item.url.replace(/^https?:\/\//, '');
+                a.href = item.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                el.appendChild(a);
+            }
+            list.appendChild(el);
+        });
+        winBody.replaceChildren(list);
+    }
+
+    const footer = options.footer || [];
+    winFooter.replaceChildren(...footer.map(b => {
+        const btn = make('button', 'menu-btn small', b.label);
+        btn.type = 'button';
+        btn.addEventListener('click', b.onClick);
+        return btn;
+    }));
+    winFooter.classList.toggle('hidden', footer.length === 0);
 
     modal.classList.remove('hidden');
     setBackgroundInert(true);
@@ -250,7 +392,7 @@ function openWindow(title, items) {
     void win.offsetWidth;                      // restart the animation
     win.classList.add('pop');
 
-    setTimeout(() => winClose.focus(), 0);   // after the Enter keypress has finished
+    setTimeout(() => winClose.focus(), 0);     // after the Enter keypress has finished
 }
 
 function closeWindow() {
@@ -421,15 +563,61 @@ function makeMenuButton(label, onClick) {
 
 function buildMenu() {
     menuButtons.replaceChildren();
-    Object.values(infoWindows).forEach(w => {
-        menuButtons.appendChild(makeMenuButton(w.title, () => openWindow(w.title, w.items)));
+    Object.values(infoWindows).filter(w => w.inMenu !== false).forEach(w => {
+        menuButtons.appendChild(makeMenuButton(w.title, () => openWindow(w.title, w.items, w.options)));
     });
     menuButtons.appendChild(makeMenuButton('Log out', goToTitle));
 }
 
+/* ================= MENU BANNER (intro ticker, then ambition) ================= */
+
+const bannerTrack  = document.getElementById('intro-track');
+const ambitionLine = document.getElementById('ambition-line');
+const TICKER_SPEED = 110;          // pixels per second
+let bannerTimer, ambitionTyping, bannerDone = true;
+
+function finishBanner() {
+    if (bannerDone) return;
+    bannerDone = true;
+    clearTimeout(bannerTimer);
+    bannerTrack.classList.remove('run');
+    bannerTrack.classList.add('hidden');
+    ambitionLine.textContent = '';
+    ambitionLine.classList.remove('hidden');
+    ambitionTyping = typeText(ambitionLine, ambitionText, 90);   // slow typing
+}
+
+function playMenuBanner() {
+    clearTimeout(bannerTimer);
+    clearInterval(ambitionTyping);
+    ambitionLine.textContent = '';
+    ambitionLine.classList.add('hidden');
+    bannerTrack.textContent = introTicker;
+    bannerTrack.classList.remove('run', 'hidden', 'still');
+
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {                        // no sliding: show both lines straight away
+        bannerDone = true;
+        bannerTrack.classList.add('still');
+        ambitionLine.textContent = ambitionText;
+        ambitionLine.classList.remove('hidden');
+        return;
+    }
+
+    bannerDone = false;
+    const seconds = (window.innerWidth + bannerTrack.offsetWidth) / TICKER_SPEED;
+    bannerTrack.style.animationDuration = seconds + 's';
+    void bannerTrack.offsetWidth;              // restart the animation
+    bannerTrack.classList.add('run');
+    bannerTimer = setTimeout(finishBanner, seconds * 1000 + 800);   // safety net
+}
+
+bannerTrack.addEventListener('animationend', finishBanner);
+
 function showMenu() {
     menuUser.textContent = `User: ${currentUser}`;
     showView(menuScreen);
+    playMenuBanner();
     menuButtons.querySelector('button')?.focus();
 }
 
