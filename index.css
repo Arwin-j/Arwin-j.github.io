@@ -14,8 +14,8 @@ body {
   width: 100%;
   height: 100%;
   background: #0a0a0a;
-  border: var(--frame) solid #222;
-  border-radius: 15px;
+  /* border: var(--frame) solid #222; */
+  /* border-radius: 15px; */
   overflow-y: auto;
   font-family: var(--terminal-font);
 }
@@ -472,3 +472,45 @@ a,
 .menu-btn,
 .mode-opt,
 .win-close { cursor: var(--cursor-click); }
+
+
+/* ---------- Experiences window: tabs + bullets ---------- */
+.crt-window.big {                    /* fixed height so switching tabs never resizes the window */
+  width: min(92vw, 820px);
+  height: min(85vh, 720px);
+}
+.crt-window.big .win-body { flex: 1; }
+
+.win-tabs {                         /* lives inside the title bar */
+  display: flex;
+  align-self: stretch;
+  margin: -8px 0 -8px -12px;         /* bleed to the bar's top, bottom and left edges */
+}
+.win-tab {
+  padding: 0 18px;
+  font: 700 1rem var(--terminal-font);
+  color: var(--green-dim);
+  background: transparent;
+  border: 0;
+  border-right: 2px solid var(--green-dim);
+  cursor: pointer;
+}
+.win-tab[aria-selected="true"] { background: var(--green-dim); color: #000; text-shadow: none; }
+.win-tab:hover:not([aria-selected="true"]),
+.win-tab:focus-visible { background: rgba(0, 255, 0, 0.15); outline: none; }
+
+/* ---------- Skills by category ---------- */
+.skill-group {
+  display: grid;
+  grid-template-columns: 12.5rem 1fr;
+  gap: 4px 16px;
+  margin-bottom: 14px;
+}
+.skill-group:last-child { margin-bottom: 0; }
+.skill-label { font-weight: 700; }
+.skill-label::after { content: ":"; }
+.skill-items { opacity: 0.95; }
+
+@media (max-width: 600px) {
+  .skill-group { grid-template-columns: 1fr; }
+}

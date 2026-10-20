@@ -19,6 +19,7 @@ const modeSimpleBtn   = document.getElementById('mode-simple');
 const modeTerminalBtn = document.getElementById('mode-terminal');
 const modeHint        = document.getElementById('mode-hint');
 const winFooter = document.getElementById('win-footer');
+const winTabs   = document.getElementById('win-tabs');
 
 let count = 4;
 let per = 16;
@@ -30,7 +31,16 @@ let currentLine = 0;
 
 /* ================= CONTENT (edit these) ================= */
 
-const skills = ['Java', 'C', 'HTML', 'CSS', 'JavaScript'];
+// Skills grouped by category: add, remove or reorder freely
+const skills = [
+    { category: 'Languages',          items: ['Python', 'TypeScript', 'JavaScript', 'SQL'] },
+    { category: 'Frontend & Desktop', items: ['React', 'Next.js', 'Electron.js', 'Vite'] },
+    { category: 'Backend',            items: ['Node.js', 'Express.js', 'Flask', 'FastAPI', 'REST APIs'] },
+    { category: 'Databases',          items: ['PostgreSQL', 'ChromaDB'] },
+    { category: 'Testing',            items: ['pytest', 'Jest'] },
+    { category: 'AI & LLM',           items: ['RAG', 'Vector Retrieval', 'OpenRouter', 'Cursor'] },
+    { category: 'Tools',              items: ['Git', 'GitHub', 'Docker', 'Google Maps API', 'Microsoft Teams', 'Excel', 'EnergyCap'] },
+];
 
 const profileInfo = [
     'Name: Arwin',
@@ -39,6 +49,39 @@ const profileInfo = [
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/arwin-johnson-64718a256/' },
     // add more lines here
 ];
+
+
+// Experience: one object per job (shown in the order you list them)
+const profile = [
+    {
+        company:  'Temple Energy Office',
+        role:     'Energy Data Analyst',
+        period:   'Apr 2024 - May 2026',
+        location: 'Philadelphia, Pennsylvania, United States · On-site',
+        url:      'https://www.linkedin.com/in/arwin-johnson-64718a256/',   // optional; delete the line for no link
+        bullets: [
+            'Built and validated Python script using the EnergyCap API to query utility, meter, and building-level consumption data by location and resource type, exporting results to Excel to fulfill stakeholder data requests',
+            'Investigated EnergyCap-flagged billing anomalies for 385+ utility accounts by analyzing historical usage and cost trends resolving flags with documented reasoning or coordinating with facility contacts to identify causes',
+            'Generated requirement driven test scenarios and test cases using AI tools, performed validation and maintained traceability from the requirements to the test results for EnergyCap application',
+            'Mentored and trained 3 student employees on utility billing workflows, providing guidance to ensure accurate processing and continuity of daily operations',
+        ]
+    },
+    {
+        company:  'Vengo AI',
+        role:     'Application Developer Intern',
+        period:   'Aug 2025 - Dec 2025',
+        location: 'Philadelphia, Pennsylvania, United States · Remote',
+        url:      'https://www.linkedin.com/in/arwin-johnson-64718a256/',   // optional; delete the line for no link
+        bullets: [
+            'Engineered scalable Next.js and Express.js API endpoints to manage secure student-mentor messaging, dynamic dashboards, and structured Lifebook entries',
+            'Maintained PostgreSQL database, handling over 50,000 data entries, tracking multi-relational user roles, permissions, and mentoring content',
+            'Developed automated test suites using Jest to validate API endpoint behavior, input validation, and edge-case error responses',
+            'Generated requirement driven test scenarios and test cases using AI tools, performing functional validation and maintained traceability from the requirements to the test results of PenKind application',
+        ]
+
+    }
+];
+
 
 
 // Education: one object per school
@@ -61,15 +104,33 @@ const certifications = [
         url:      'https://www.freecodecamp.org/certification/arwinjasperjohnson/python-v9'
     },
     {
-        name:     'Certificate of completion: Claude 101',
+        name:     'Claude 101',
         date:     '06 2026',
         provider: 'Anthropic',
         url:      'https://verify.skilljar.com/c/e2b3grfim2h7'
+    },
+    {
+        name:     'Claude code 101',
+        date:     '06 2026',
+        provider: 'Anthropic',
+        url:      'https://verify.skilljar.com/c/7or5szz5qhxt'
+    },
+    {
+        name:     'Claude Platform 101',
+        date:     '06 2026',
+        provider: 'Anthropic',
+        url:      'https://verify.skilljar.com/c/pnnfragdbvw9'
+    },
+    {
+        name:     'Introduction to Claude Cowork',
+        date:     '06 2026',
+        provider: 'Anthropic',
+        url:      'https://verify.skilljar.com/c/6wgmr9arsjpq'
     }
 ];
 
 // Scrolls across the top of the Simple-mode menu (one line)
-const introTicker = "Hello! I'm Arwin, a recent Computer Science graduate on a mission to master AI Engineering and Game Development. I love turning complex logic into interactive experiences. Explore my portfolio to see how I bridge the gap between intelligent data and gameplay!";
+const introTicker = "Hello! I'm Arwin, a recent Computer Science graduate on a mission to master AI Engineering and Game Development. I love turning complex logic into interactive profile. Explore my portfolio to see how I bridge the gap between intelligent data and gameplay!";
 
 // Types out slowly after the ticker has passed (EDIT this to your own words)
 const ambitionText = 'My ambition is to build and create meaningful software that simplifies lives and solves real-world problems.';
@@ -86,6 +147,7 @@ const helpInfo = [
     'help - displays all commands with instructions',
     'intro - opens the introduction window',
     'education (or edu) - opens the education window',
+    'experience (or exp) - opens the experiences and skills window',
     'clear - clears terminal',
     'exit - returns to the title screen'
 ];
@@ -184,8 +246,20 @@ function bootTerminal() {
 // To add another pop-up page, add one line here.
 const infoWindows = {
     profile: { title: 'Profile', items: profileInfo, inMenu: false},
-    skills:  { title: 'Skills',  items: skills, inMenu: false},
+    skills:  { title: 'Skills',  items: [], inMenu: false, options: { wide: true, render: renderSkills } },
     intro:   { title: 'Introduction', items: introParagraphs, inMenu: false, options: { large: true, paragraphs: true } },
+    profile: {
+        title: 'Profile',
+        aliases: ['exp', 'profile'],
+        items: [],
+        options: {
+            big: true,
+            tabs: [
+                { label: 'Experiences', render: renderprofile },
+                { label: 'Skills',      render: renderSkills }
+            ]
+        }
+    },
     education: {
         title: 'Education',
         aliases: ['edu'],
@@ -345,13 +419,91 @@ function renderCertifications() {
     return wrap;
 }
 
+function renderprofile() {
+    const wrap = make('div', 'entries');
+    profile.forEach(x => {
+        const entry = make('div', 'entry');
+
+        const label = `${x.company} - ${x.role}`;
+        const title = make('span', 'entry-title');
+        if (x.url) {
+            const link = make('a', '', label);
+            link.href = x.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            title.appendChild(link);
+        } else {
+            title.textContent = label;
+        }
+
+        const top = make('div', 'entry-row');
+        top.append(title, make('span', 'entry-line'), make('span', 'entry-date', x.period));
+
+        const sub = make('div', 'entry-row entry-sub');
+        sub.append(make('span', '', x.location));
+
+        const list = make('ul', 'exp-bullets');
+        x.bullets.forEach(b => list.appendChild(make('li', '', b)));
+
+        entry.append(top, sub, list);
+        wrap.appendChild(entry);
+    });
+    return wrap;
+}
+
+function renderSkills() {
+    const wrap = make('div', 'skill-groups');
+    skills.forEach(group => {
+        const row = make('div', 'skill-group');
+        row.append(make('span', 'skill-label', group.category), make('span', 'skill-items', group.items.join(', ')));
+        wrap.appendChild(row);
+    });
+    return wrap;
+}
+
+// Tabs inside a window
+function selectTab(tabs, index) {
+    [...winTabs.children].forEach((btn, i) => {
+        btn.setAttribute('aria-selected', String(i === index));
+        btn.tabIndex = i === index ? 0 : -1;
+    });
+    winBody.replaceChildren(tabs[index].render());
+    winBody.scrollTop = 0;
+}
+
+function buildTabs(tabs) {
+    winTabs.replaceChildren();
+    tabs.forEach((tab, i) => {
+        const btn = make('button', 'win-tab', tab.label);
+        btn.type = 'button';
+        btn.setAttribute('role', 'tab');
+        btn.addEventListener('click', () => selectTab(tabs, i));
+        btn.addEventListener('keydown', (e) => {      // left/right arrows move between tabs
+            if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+            const next = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            selectTab(tabs, next);
+            winTabs.children[next].focus();
+        });
+        winTabs.appendChild(btn);
+    });
+}
+
 function openWindow(title, items, options = {}) {
     if (!isWindowOpen()) lastFocus = document.activeElement;   // keep the original opener when switching windows
     winTitle.textContent = title;
     win.classList.toggle('large', Boolean(options.large));
     win.classList.toggle('wide', Boolean(options.wide));
+    win.classList.toggle('big', Boolean(options.big));
 
-    if (options.render) {
+    const tabs = options.tabs || [];
+    winTabs.replaceChildren();
+    winTabs.classList.toggle('hidden', tabs.length === 0);
+    winTitle.classList.toggle('hidden', tabs.length > 0);   // tabs take the title's place in the bar
+
+    if (tabs.length) {
+        buildTabs(tabs);
+        selectTab(tabs, 0);
+    } else if (options.render) {
         winBody.replaceChildren(options.render());
     } else {
         const list = document.createElement(options.paragraphs ? 'div' : 'ul');
@@ -372,6 +524,7 @@ function openWindow(title, items, options = {}) {
         });
         winBody.replaceChildren(list);
     }
+    winBody.scrollTop = 0;
 
     const footer = options.footer || [];
     winFooter.replaceChildren(...footer.map(b => {
@@ -412,7 +565,7 @@ document.addEventListener('keydown', (e) => {
 let drag = null;
 
 winBar.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.win-close')) return;
+    if (e.target.closest('.win-close, .win-tab')) return;
     drag = { dx: e.clientX - win.offsetLeft, dy: e.clientY - win.offsetTop };
     winBar.setPointerCapture(e.pointerId);
     winBar.classList.add('dragging');
