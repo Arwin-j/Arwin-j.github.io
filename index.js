@@ -20,6 +20,8 @@ const modeTerminalBtn = document.getElementById('mode-terminal');
 const modeHint        = document.getElementById('mode-hint');
 const winFooter = document.getElementById('win-footer');
 const winTabs   = document.getElementById('win-tabs');
+const winSubTabs = document.getElementById('win-subtabs');
+const skipHint    = document.getElementById('skip-hint');
 
 let count = 4;
 let per = 16;
@@ -48,6 +50,75 @@ const profileInfo = [
     { label: 'GitHub',   url: 'https://github.com/Arwin-j' },
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/arwin-johnson-64718a256/' },
     // add more lines here
+];
+
+
+// Social links, in display order. In the terminal window the first three sit on
+// top and the last two sit in between them. (EDIT the placeholder URLs)
+const socials = [
+    { name: 'LinkedIn',  icon: '[in]', url: 'https://www.linkedin.com/in/arwin-johnson-64718a256/' },
+    { name: 'GitHub',    icon: '</>',  url: 'https://github.com/Arwin-j' },
+    { name: 'YouTube',   icon: '[>]',  url: 'https://www.youtube.com/@VeeraSelvan-h7t' },
+    { name: 'Instagram', icon: '(o)',  url: 'https://www.instagram.com/arwin_3654' },
+    { name: 'Gmail',     icon: '[@]',  url: 'https://mail.google.com/mail/?view=cm&to=arwinjohnson04@gmail.com' },
+];
+
+// Projects: one object per project. Each becomes a tab. (EDIT these placeholders)
+// Tip: keep art inside String.raw`...` so backslashes in the drawing are safe.
+const projects = [
+    {
+        name:        'Nexus AI',                
+        description: 'A desktop AI agent that answers questions using your own documents, so its replies stay grounded in real sources.',   // EDIT: short description
+        points: [
+            'Engineered a desktop-based AI Agent using Electron, React, and Vite with a Python/Flask backend',
+            'Designed an automated document ingestion pipeline utilizing Python to parse text and partition data into fixed-length semantic blocks, prioritizing system predictability and MVP simplicity for initial vector storage',
+            'Implemented a RAG pipeline via ChromaDB vector similarity searches, automatically injecting relevant document contexts into user queries to eliminate AI hallucinations',
+            'Generated test suites using AI assist tool, performed functional validation and maintained traceability from requirements to the test results',
+        ],
+        skills:      ['Electron.js', 'React', 'Vite', 'Python', 'Flask', 'ChromaDB', 'RAG'],
+        links: [
+            { label: 'GitHub', url: 'https://github.com/Arwin-j/Nexus-AI' },
+        ],
+        art: String.raw`
+     ,     ,
+    (\____/)
+     (_oo_)
+       (O)
+     __||__    \)
+  []/______\[] /
+  / \______/ \/
+ /    /__\
+(\   /____\
+`
+    },
+    {
+        name:        'RouTU',                
+        description: 'Built a 24-hour hackathon app using Google Gemini and Maps API to calculate campus routes and securely save user histories',   // EDIT: short description
+        points: [
+            'Engineered a campus navigation application within 24-hour hackathon, integrating Google Gemini to parse multi-format inputs into structured destination coordinates',
+            'Connected Google Maps API to calculate optimal walking paths and designed PostgreSQL schemas to manage spatial route histories, saved locations, and user profile data',
+            'Built a Node.js and Express.js backend with JWT authentication and session persistence, establishing secure REST API endpoints to coordinate data between the AI models and the frontend UI',
+        ],
+        skills:      ['PostgreSQL', 'Google Maps API', 'Node.js', 'Google Gemini'],
+        links: [
+            { label: 'GitHub', url: 'https://github.com/Arwin-j/rouTU' },
+            { label: 'DEVPOST', url: 'https://devpost.com/software/routtu'}
+        ],
+        art: String.raw
+        
+`   __        __
+   /\ \      / /\
+  / /\ \    / /\ \
+ / /__\ \__/_/__\ \
+ \/____\ \_______\/
+         \/ /
+        / /\
+       / /\ \
+      / /__\ \
+      \_____\/
+`
+    },
+    
 ];
 
 
@@ -144,10 +215,15 @@ const introParagraphs = [
 ];
 
 const helpInfo = [
+    'COMMANDS',
     'help - displays all commands with instructions',
+    'skills - opens the skills window',
     'intro - opens the introduction window',
-    'education (or edu) - opens the education window',
+    'projects (or project) - opens the projects window',
+    'connect (or contact) - opens the social links window',
     'experience (or exp) - opens the experiences and skills window',
+    'education (or edu) - opens the education window',
+    'certifications (or certs) - opens the certifications window',
     'clear - clears terminal',
     'exit - returns to the title screen'
 ];
@@ -205,13 +281,21 @@ function typeText(element, text, speed, callback) {
 
 /* ================= BOOT ================= */
 
+let bootDone = false;
+let bootTyping, bootTimer;
+
+function isBooting() {
+    return booted && !bootDone;
+}
+
 function animate() {
+    if (bootDone) return;
     if (count >= 100) {
         clearInterval(loading);
         percent.style.display = 'none';
         progress.style.display = 'none';
         progressbar.style.display = 'none';
-        setTimeout(bootTerminal, 500);
+        bootTimer = setTimeout(bootTerminal, 500);
     } else {
         per += 8;
         count += 2;
@@ -221,24 +305,60 @@ function animate() {
 }
 
 function bootTerminal() {
+    if (bootDone) return;
     const sequence = getBootSequence();
 
     if (currentLine < sequence.length) {
         const line = createLine();
         const { text, delay } = sequence[currentLine];
 
-        typeText(line, text, delay, () => {
+        bootTyping = typeText(line, text, delay, () => {
             currentLine++;
-            setTimeout(bootTerminal, 200);
+            bootTimer = setTimeout(bootTerminal, 200);
         });
     } else {
-        setTimeout(() => {
-            clearTerminal();
-            printStatic(getSystemInfo());
-            showPrompt();
-        }, 500);
+        bootTimer = setTimeout(finishBoot, 500);
     }
 }
+
+// Runs at the end of the boot, or immediately when the visitor skips it
+function finishBoot() {
+    if (bootDone) return;
+    bootDone = true;
+    clearInterval(loading);
+    clearInterval(bootTyping);
+    clearTimeout(bootTimer);
+    percent.style.display = 'none';
+    progress.style.display = 'none';
+    progressbar.style.display = 'none';
+    skipHint.classList.add('hidden');
+
+    clearTerminal();
+    printStatic(getSystemInfo());
+    showPrompt();
+    openInfo('connect');              // pops up once the terminal is ready
+}
+
+// Skip the boot: press Space twice (desktop) or double-tap (phones)
+const DOUBLE_MS = 450;
+let lastSpace = 0;
+let lastTap = 0;
+
+document.addEventListener('keydown', (e) => {
+    if (!isBooting() || e.code !== 'Space') return;
+    e.preventDefault();
+    if (e.repeat) return;                    // holding the key down doesn't count
+    const now = Date.now();
+    if (now - lastSpace < DOUBLE_MS) finishBoot();
+    lastSpace = now;
+});
+
+screen.addEventListener('pointerdown', () => {
+    if (!isBooting()) return;
+    const now = Date.now();
+    if (now - lastTap < DOUBLE_MS) finishBoot();
+    lastTap = now;
+});
 
 /* ================= COMMANDS ================= */
 
@@ -248,6 +368,29 @@ const infoWindows = {
     profile: { title: 'Profile', items: profileInfo, inMenu: false},
     skills:  { title: 'Skills',  items: [], inMenu: false, options: { wide: true, render: renderSkills } },
     intro:   { title: 'Introduction', items: introParagraphs, inMenu: false, options: { large: true, paragraphs: true } },
+    help: {
+        title: 'Help',
+        inMenu: false,
+        items: [],
+        options: { wide: true, render: renderHelp }
+    },
+    connect: {
+        title: 'Connect with me',
+        aliases: ['contact', 'social'],
+        inMenu: false,                   // Simple mode shows these as a footer instead
+        items: [],
+        options: { render: renderConnect }
+    },
+    projects: {
+        title: 'Projects',
+        aliases: ['project'],
+        items: [],
+        options: {
+            big: true,
+            tabsBelow: true,             // project tabs sit under the title bar
+            tabs: projects.map(p => ({ label: p.name, render: () => renderProject(p) }))
+        }
+    },
     profile: {
         title: 'Profile',
         aliases: ['exp', 'profile'],
@@ -375,6 +518,17 @@ function make(tag, className, text) {
     return node;
 }
 
+function renderHelp() {
+    const wrap = make('div', 'help-list');
+    helpInfo.forEach(line => {
+        const [cmd, ...rest] = line.split(' - ');
+        const row = make('div', 'help-row');
+        row.append(make('span', 'help-cmd', cmd), make('span', 'help-desc', rest.join(' - ')));
+        wrap.appendChild(row);
+    });
+    return wrap;
+}
+
 function renderEducation() {
     const wrap = make('div', 'entries');
     education.forEach(e => {
@@ -461,9 +615,62 @@ function renderSkills() {
     return wrap;
 }
 
+function makeSocialLink(s) {
+    const a = make('a', 'social');
+    a.href = s.url;
+    if (!s.url.startsWith('mailto:')) {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+    }
+    a.setAttribute('aria-label', s.name);
+    a.append(make('span', 'social-icon', s.icon), make('span', 'social-label', s.name));
+    return a;
+}
+
+function renderConnect() {
+    const grid = make('div', 'connect-grid');
+    socials.forEach(s => grid.appendChild(makeSocialLink(s)));
+    return grid;
+}
+
 // Tabs inside a window
-function selectTab(tabs, index) {
-    [...winTabs.children].forEach((btn, i) => {
+function renderProject(p) {
+    const page = make('div', 'project');
+
+    if (p.art) {
+        const art = make('pre', 'project-art', p.art.replace(/^\n/, ''));
+        art.setAttribute('aria-hidden', 'true');       // decoration only
+        page.appendChild(art);
+    }
+
+    page.appendChild(make('p', 'project-desc', p.description));
+
+    if (p.points && p.points.length) {                 // detailed resume points
+        const list = make('ul', 'exp-bullets');
+        p.points.forEach(point => list.appendChild(make('li', '', point)));
+        page.appendChild(list);
+    }
+
+    const skillLine = make('div', 'project-skills');
+    skillLine.append(make('strong', '', 'Skills: '), p.skills.join(', '));
+    page.appendChild(skillLine);
+
+    (p.links || []).forEach(l => {
+        const row = make('div', 'project-link');
+        row.append(`${l.label}: `);
+        const a = make('a', '', l.url.replace(/^https?:\/\//, ''));
+        a.href = l.url;
+        if (l.download) a.setAttribute('download', '');    // for files hosted in your own repo
+        else { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+        row.appendChild(a);
+        page.appendChild(row);
+    });
+    return page;
+}
+
+// Tabs inside a window (host = the bar's tab holder or the strip under the bar)
+function selectTab(host, tabs, index) {
+    [...host.children].forEach((btn, i) => {
         btn.setAttribute('aria-selected', String(i === index));
         btn.tabIndex = i === index ? 0 : -1;
     });
@@ -471,20 +678,20 @@ function selectTab(tabs, index) {
     winBody.scrollTop = 0;
 }
 
-function buildTabs(tabs) {
-    winTabs.replaceChildren();
+function buildTabs(host, tabs) {
+    host.replaceChildren();
     tabs.forEach((tab, i) => {
         const btn = make('button', 'win-tab', tab.label);
         btn.type = 'button';
         btn.setAttribute('role', 'tab');
-        btn.addEventListener('click', () => selectTab(tabs, i));
+        btn.addEventListener('click', () => selectTab(host, tabs, i));
         btn.addEventListener('keydown', (e) => {      // left/right arrows move between tabs
             if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
             const next = (i + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-            selectTab(tabs, next);
-            winTabs.children[next].focus();
+            selectTab(host, tabs, next);
+            host.children[next].focus();
         });
-        winTabs.appendChild(btn);
+        host.appendChild(btn);
     });
 }
 
@@ -496,13 +703,16 @@ function openWindow(title, items, options = {}) {
     win.classList.toggle('big', Boolean(options.big));
 
     const tabs = options.tabs || [];
+    const host = options.tabsBelow ? winSubTabs : winTabs;
     winTabs.replaceChildren();
-    winTabs.classList.toggle('hidden', tabs.length === 0);
-    winTitle.classList.toggle('hidden', tabs.length > 0);   // tabs take the title's place in the bar
+    winSubTabs.replaceChildren();
+    winTabs.classList.toggle('hidden', !(tabs.length && !options.tabsBelow));
+    winSubTabs.classList.toggle('hidden', !(tabs.length && options.tabsBelow));
+    winTitle.classList.toggle('hidden', tabs.length > 0 && !options.tabsBelow);   // bar tabs replace the title
 
     if (tabs.length) {
-        buildTabs(tabs);
-        selectTab(tabs, 0);
+        buildTabs(host, tabs);
+        selectTab(host, tabs, 0);
     } else if (options.render) {
         winBody.replaceChildren(options.render());
     } else {
@@ -806,7 +1016,9 @@ modeSimpleBtn.addEventListener('click',   () => setMode('simple', true));
 modeTerminalBtn.addEventListener('click', () => setMode('terminal', true));
 
 buildMenu();
+socials.forEach(s => document.getElementById('connect-icons').appendChild(makeSocialLink(s)));
 setMode(initialMode(), false);
+
 
 /* ================= START ON TITLE ================= */
 // Don't rely on the HTML classes: always begin with only the title screen showing.

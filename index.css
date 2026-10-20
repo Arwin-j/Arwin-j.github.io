@@ -350,7 +350,8 @@ body {
 }
 
 /* ---------- Simple mode menu ---------- */
-#menu-screen { justify-content: center; padding-top: 7rem; }
+#menu-screen { justify-content: flex-start; padding-top: 7rem; overflow-y: auto; }
+#menu-screen .menu-title { margin-top: auto; }   /* auto margins center the menu, and let it scroll on short screens */
 
 .menu-title {
   font-size: clamp(2rem, 8vw, 4rem);
@@ -513,4 +514,113 @@ a,
 
 @media (max-width: 600px) {
   .skill-group { grid-template-columns: 1fr; }
+}
+
+
+/* ---------- Projects window ---------- */
+.win-subtabs {                      /* tab strip under the title bar */
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 2px solid var(--green-dim);
+}
+.win-subtabs .win-tab {
+  flex: none;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.project-art {
+  float: right;
+  max-width: 45%;
+  margin: 0 0 12px 16px;
+  overflow: hidden;
+  font: 0.8rem/1.15 var(--terminal-font);
+  white-space: pre;
+  opacity: 0.9;
+}
+.project-desc { margin-bottom: 14px; }
+.project-skills,
+.project-link { clear: both; margin-bottom: 8px; }
+
+@media (max-width: 600px) {
+  .project-art { float: none; max-width: 100%; margin: 0 0 12px; overflow-x: auto; }
+}
+
+/* ---------- Connect with me ---------- */
+.social {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--green-dim);
+  text-decoration: none;
+  cursor: pointer;
+}
+.social-icon {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 0 6px var(--green-dim), 0 0 16px #00aa00;
+}
+.social-label { font-size: 0.85rem; letter-spacing: 0.06em; }
+
+.social:hover,
+.social:focus-visible {
+  background: var(--green-dim);
+  color: #000;
+  outline: none;
+}
+.social:hover .social-icon,
+.social:focus-visible .social-icon { text-shadow: none; }
+
+/* terminal pop-up: three icons on top, two staggered in between */
+.connect-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 28px 0;
+  padding: 8px 0;
+}
+.connect-grid .social { grid-column: span 2; padding: 8px 0; }
+.connect-grid .social:nth-child(4) { grid-column: 2 / 4; }
+.connect-grid .social:nth-child(5) { grid-column: 4 / 6; }
+.win-body .social { text-decoration: none; word-break: normal; }
+
+/* Simple-mode footer */
+.connect-footer {
+  margin-top: auto;
+  padding: 24px 0 8px;
+  text-align: center;
+}
+.connect-title { margin-bottom: 10px; font-size: 1rem; letter-spacing: 0.12em; text-shadow: 0 0 6px var(--green-dim); }
+.connect-icons { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; }
+.connect-footer .social { padding: 4px 8px; }
+.connect-footer .social-icon { font-size: 1.4rem; }
+
+
+/* ---------- Help window ---------- */
+.help-row {
+  display: grid;
+  grid-template-columns: 15rem 1fr;
+  gap: 4px 16px;
+  padding: 6px 0;
+}
+.help-cmd { font-weight: 700; }
+
+@media (max-width: 600px) {
+  .help-row { grid-template-columns: 1fr; }
+}
+
+/* ---------- Skip the boot ---------- */
+.screen { touch-action: manipulation; }     /* stops double-tap from zooming the page */
+.skip-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 20px;
+  z-index: 3;
+  padding: 0 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.6;
 }

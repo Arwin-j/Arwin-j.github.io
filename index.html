@@ -52,6 +52,10 @@
     <h2 class="menu-title">Menu</h2>
     <p id="menu-user" class="menu-user"></p>
     <div id="menu-buttons" class="btn-row menu-buttons"></div>
+    <footer class="connect-footer">
+      <p class="connect-title">Connect with me</p>
+      <div id="connect-icons" class="connect-icons"></div>
+    </footer>
   </section>
 
   <!-- TERMINAL -->
@@ -61,6 +65,8 @@
       <div class="percent"></div>
     </div>
     <div id="terminal"></div>
+  
+    <p id="skip-hint" class="skip-hint">Skip: press Space twice, or double-tap</p>
   </div>
 
   <!-- POP-UP WINDOW (CRT style, modal + draggable) -->
@@ -71,7 +77,7 @@
         <div class="win-tabs hidden" id="win-tabs" role="tablist"></div>
         <button type="button" id="win-close" class="win-close" aria-label="Close window">&times;</button>
       </div>
-      
+      <div class="win-subtabs hidden" id="win-subtabs" role="tablist"></div>
       <div class="win-body" id="win-body"></div>
       <div class="win-footer hidden" id="win-footer"></div>
     </div>
