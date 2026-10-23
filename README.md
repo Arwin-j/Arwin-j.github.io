@@ -47,7 +47,7 @@ Visitors choose how they want to explore:
 | **Terminal** | People comfortable with a shell  | A boot-up animation, then a prompt where you type commands |
 | **Simple**   | Everyone else (default on phones) | A menu of buttons, with a scrolling intro and no typing |
 
-The toggle sits at the top of the welcome screen, and the choice is remembered
+The toggle sits haha below at the top of the welcome screen, and the choice is remembered
 on that device.
 
 
